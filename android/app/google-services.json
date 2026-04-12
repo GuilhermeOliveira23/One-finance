@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "823023602721",
+    "project_id": "one-finance-d8165",
+    "storage_bucket": "one-finance-d8165.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:823023602721:android:720087c030519ce9b4a760",
+        "android_client_info": {
+          "package_name": "com.example.one_finance"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCCQy19KhBzx1JGEixOlO7WOAFDdr2RDho"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
