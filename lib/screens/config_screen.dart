@@ -74,7 +74,7 @@ class _ConfigScreenState extends State<ConfigScreen> {
                         child: ListTile(
                           leading: CircleAvatar(
                             radius: 28,
-                            backgroundImage: _usuario?.avatarUrl != null
+                            backgroundImage: _usuario?.avatarUrl.isNotEmpty == true
                                 ? AssetImage(_usuario!.avatarUrl)
                                 : const AssetImage('assets/avatar.png'),
                           ),
