@@ -55,9 +55,8 @@ class HomePage extends StatelessWidget {
             } else if (valorRaw is String) {
               valor = double.tryParse(valorRaw.replaceAll(',', '.')) ?? 0;
             }
-            final categoria =
-                (item['categoria'] ?? '').toString().toLowerCase();
-            if (categoria.contains('invest')) {
+            final tipo = (item['tipo'] ?? 'Despesa').toString();
+            if (tipo == 'Receita') {
               totalReceitas += valor;
             } else {
               totalDespesas += valor;
@@ -128,8 +127,8 @@ class HomePage extends StatelessWidget {
                     horizontal: 16.0, vertical: 8.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: const [
-                    Text(
+                  children: [
+                    const Text(
                       'Transações Recentes',
                       style: TextStyle(
                         fontSize: 20,
@@ -166,9 +165,9 @@ class HomePage extends StatelessWidget {
                                     valorRaw.replaceAll(',', '.')) ??
                                 0;
                           }
-                          final isReceita = categoria
-                              .toLowerCase()
-                              .contains('invest');
+                          final tipo =
+                              (item['tipo'] ?? 'Despesa').toString();
+                          final isReceita = tipo == 'Receita';
                           return Card(
                             margin: const EdgeInsets.symmetric(
                                 horizontal: 16, vertical: 8),

@@ -11,12 +11,14 @@ class FirestoreService {
     required String titulo,
     required String categoria,
     required double valor,
+    required String tipo,
   }) {
     final col = _db.collection('users').doc(uid).collection('transactions');
     return col.add({
       'titulo': titulo,
       'categoria': categoria,
       'valor': valor,
+      'tipo': tipo,
       'createdAt': FieldValue.serverTimestamp(),
     });
   }
