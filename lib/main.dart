@@ -1,34 +1,107 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'firebase_options.dart';
 import 'screens/home_screen.dart';
 import 'screens/transacoes_screen.dart';
 import 'screens/resumo_screen.dart';
 import 'screens/config_screen.dart';
 import 'screens/add_transacao_screen.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart'; // O arquivo que o comando anterior criou
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  runApp(const MeuApp()); // <--- Alterado de MyApp para MeuApp
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  runApp(const AppRoot());
 }
 
-class MeuApp extends StatelessWidget {
-  const MeuApp({super.key});
+class AppRoot extends StatelessWidget {
+  const AppRoot({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
       title: 'App Financeiro',
-      theme: ThemeData(useMaterial3: true),
-      home: const MainScreen(),
+      debugShowCheckedModeBanner: false,
+      home: const AuthGate(),
     );
   }
 }
+
+class AuthGate extends StatefulWidget {
+  const AuthGate({super.key});
+  @override
+  State<AuthGate> createState() => _AuthGateState();
+}
+
+class _AuthGateState extends State<AuthGate> {
+  bool _tryingSignIn = false;
+
+  Future<void> _signInAnonymously() async {
+    setState(() => _tryingSignIn = true);
+    try {
+      await FirebaseAuth.instance.signInAnonymously();
+    } catch (e) {
+      // mostra erro amigável
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao autenticar: $e')),
+      );
+    } finally {
+      setState(() => _tryingSignIn = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        // aguardando conexão com o serviço auth
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        }
+
+        final user = snapshot.data;
+
+        // se não autenticado, mostra botão para autenticar anonimamente
+        if (user == null) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('Entrar')),
+            body: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('Você não está autenticado'),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: _tryingSignIn ? null : _signInAnonymously,
+                    child: _tryingSignIn
+                        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                        : const Text('Entrar anonimamente'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        // autenticado: pode acessar o app. Mostra UID nos logs para debug.
+        debugPrint('Usuário autenticado UID: ${user.uid}');
+        return const MainScreenWrapper();
+      },
+    );
+  }
+}
+
+// wrapper simples que usa seu MainScreen (cole/ajuste baseado no seu main original)
+class MainScreenWrapper extends StatelessWidget {
+  const MainScreenWrapper({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MainScreen(); // seu MainScreen existente
+  }
+}
+// Cole isto no final do seu main.dart (abaixo de MainScreenWrapper)
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -49,7 +122,7 @@ class _MainScreenState extends State<MainScreen> {
     final novaTransacao = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => AddTransacaoScreen(),
+        builder: (context) => const AddTransacaoScreen(),
       ),
     );
 
@@ -64,9 +137,9 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     final paginas = [
-     const HomePage(),
-      TransacoesScreen(transacoes: transacoes),
-      ResumoScreen(transacoes: transacoes),
+      const HomePage(),
+      const TransacoesScreen(), // se você já fez TransacoesScreen lendo do Firestore, use const TransacoesScreen()
+      const ResumoScreen(),
       const ConfigScreen(),
     ];
 

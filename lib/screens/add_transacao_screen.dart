@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../services/firestore_service.dart';
 
 class AddTransacaoScreen extends StatefulWidget {
   const AddTransacaoScreen({super.key});
@@ -11,15 +13,43 @@ class _AddTransacaoScreenState extends State<AddTransacaoScreen> {
   final tituloController = TextEditingController();
   final valorController = TextEditingController();
   String categoriaSelecionada = 'Variáveis';
+  final FirestoreService _fs = FirestoreService();
+  bool _loading = false;
 
-  void salvar() {
+  void salvar() async {
     if (tituloController.text.isEmpty || valorController.text.isEmpty) return;
 
-    Navigator.pop(context, {
-      'titulo': tituloController.text,
-      'categoria': categoriaSelecionada,
-      'valor': 'R\$ ${valorController.text}',
-    });
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Usuário não autenticado')),
+      );
+      return;
+    }
+
+    final valor = double.tryParse(valorController.text.replaceAll(',', '.'));
+    if (valor == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Valor inválido')),
+      );
+      return;
+    }
+
+    setState(() => _loading = true);
+    try {
+      await _fs.addTransaction(user.uid,
+          titulo: tituloController.text,
+          categoria: categoriaSelecionada,
+          valor: valor);
+      // fecha a tela depois de salvar
+      Navigator.pop(context);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao salvar: $e')),
+      );
+    } finally {
+      setState(() => _loading = false);
+    }
   }
 
   @override
@@ -76,15 +106,17 @@ class _AddTransacaoScreenState extends State<AddTransacaoScreen> {
             ),
             const SizedBox(height: 30),
             ElevatedButton(
-              onPressed: salvar,
+              onPressed: _loading ? null : salvar,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFFF2E88),
                 minimumSize: const Size(double.infinity, 50),
               ),
-              child: const Text(
-                'Salvar',
-                style: TextStyle(color: Colors.white),
-              ),
+              child: _loading
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text(
+                      'Salvar',
+                      style: TextStyle(color: Colors.white),
+                    ),
             ),
           ],
         ),
