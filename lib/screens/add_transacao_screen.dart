@@ -14,6 +14,7 @@ class _AddTransacaoScreenState extends State<AddTransacaoScreen> {
   final tituloController = TextEditingController();
   final valorController = TextEditingController();
   String categoriaSelecionada = 'Variáveis';
+  String tipoSelecionado = 'Despesa';
   final FirestoreService _fs = FirestoreService();
   bool _loading = false;
 
@@ -38,15 +39,14 @@ class _AddTransacaoScreenState extends State<AddTransacaoScreen> {
 
     setState(() => _loading = true);
     try {
-      // debug antes de salvar
-      debugPrint('Saving transaction for UID=${user.uid} titulo=${tituloController.text} valor=$valor categoria=$categoriaSelecionada');
+      debugPrint('Saving transaction for UID=${user.uid} titulo=${tituloController.text} valor=$valor categoria=$categoriaSelecionada tipo=$tipoSelecionado');
 
       await _fs.addTransaction(user.uid,
           titulo: tituloController.text,
           categoria: categoriaSelecionada,
-          valor: valor);
+          valor: valor,
+          tipo: tipoSelecionado);
 
-      // fecha a tela depois de salvar
       Navigator.pop(context);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -88,6 +88,25 @@ class _AddTransacaoScreenState extends State<AddTransacaoScreen> {
                 labelText: 'Valor',
                 labelStyle: TextStyle(color: Colors.white70),
               ),
+            ),
+            const SizedBox(height: 16),
+            DropdownButtonFormField<String>(
+              value: tipoSelecionado,
+              dropdownColor: const Color(0xFF8A0035),
+              style: const TextStyle(color: Colors.white),
+              decoration: const InputDecoration(
+                labelText: 'Tipo',
+                labelStyle: TextStyle(color: Colors.white70),
+              ),
+              items: const [
+                DropdownMenuItem(value: 'Receita', child: Text('Receita')),
+                DropdownMenuItem(value: 'Despesa', child: Text('Despesa')),
+              ],
+              onChanged: (value) {
+                setState(() {
+                  tipoSelecionado = value!;
+                });
+              },
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(

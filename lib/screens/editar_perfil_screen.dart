@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/usuario.dart';
+import '../services/firestore_service.dart';
 
 class EditarPerfilScreen extends StatefulWidget {
   final Usuario usuario;
   final Function(Usuario) onSalvar;
 
-  const EditarPerfilScreen({super.key, required this.usuario, required this.onSalvar});
+  const EditarPerfilScreen(
+      {super.key, required this.usuario, required this.onSalvar});
 
   @override
   State<EditarPerfilScreen> createState() => _EditarPerfilScreenState();
@@ -15,6 +18,9 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
   late TextEditingController nomeController;
   late TextEditingController emailController;
   late String avatarUrl;
+  bool _saving = false;
+
+  final FirestoreService _fs = FirestoreService();
 
   @override
   void initState() {
@@ -24,17 +30,35 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
     avatarUrl = widget.usuario.avatarUrl;
   }
 
-  void salvar() {
+  Future<void> salvar() async {
     if (nomeController.text.isEmpty || emailController.text.isEmpty) return;
 
-    final usuarioAtualizado = Usuario(
-      nome: nomeController.text,
-      email: emailController.text,
-      avatarUrl: avatarUrl,
-    );
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Usuário não autenticado')),
+      );
+      return;
+    }
 
-    widget.onSalvar(usuarioAtualizado);
-    Navigator.pop(context);
+    setState(() => _saving = true);
+    try {
+      final usuarioAtualizado = Usuario(
+        nome: nomeController.text,
+        email: emailController.text,
+        avatarUrl: avatarUrl,
+      );
+
+      await _fs.saveUserProfile(uid, usuarioAtualizado);
+      widget.onSalvar(usuarioAtualizado);
+      Navigator.pop(context);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao salvar: $e')),
+      );
+    } finally {
+      setState(() => _saving = false);
+    }
   }
 
   void trocarFoto() {
@@ -54,7 +78,17 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
         foregroundColor: Colors.white,
         title: const Text("Editar Perfil"),
         actions: [
-          IconButton(icon: const Icon(Icons.save), onPressed: salvar),
+          _saving
+              ? const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                        color: Colors.white, strokeWidth: 2),
+                  ),
+                )
+              : IconButton(icon: const Icon(Icons.save), onPressed: salvar),
         ],
       ),
       body: Padding(
@@ -96,15 +130,18 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
             ),
             const SizedBox(height: 30),
             ElevatedButton(
-              onPressed: salvar,
+              onPressed: _saving ? null : salvar,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFFF2E88),
                 minimumSize: const Size(double.infinity, 50),
               ),
-              child: const Text(
-                "Salvar Alterações",
-                style: TextStyle(color: Colors.white, fontSize: 16),
-              ),
+              child: _saving
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text(
+                      "Salvar Alterações",
+                      style:
+                          TextStyle(color: Colors.white, fontSize: 16),
+                    ),
             ),
           ],
         ),
