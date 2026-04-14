@@ -1,3 +1,4 @@
+// lib/screens/add_transacao_screen.dart
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/firestore_service.dart';
@@ -37,16 +38,21 @@ class _AddTransacaoScreenState extends State<AddTransacaoScreen> {
 
     setState(() => _loading = true);
     try {
+      // debug antes de salvar
+      debugPrint('Saving transaction for UID=${user.uid} titulo=${tituloController.text} valor=$valor categoria=$categoriaSelecionada');
+
       await _fs.addTransaction(user.uid,
           titulo: tituloController.text,
           categoria: categoriaSelecionada,
           valor: valor);
+
       // fecha a tela depois de salvar
       Navigator.pop(context);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erro ao salvar: $e')),
       );
+      debugPrint('Erro ao salvar transação: $e');
     } finally {
       setState(() => _loading = false);
     }
@@ -95,8 +101,7 @@ class _AddTransacaoScreenState extends State<AddTransacaoScreen> {
               items: const [
                 DropdownMenuItem(value: 'Variáveis', child: Text('Variáveis')),
                 DropdownMenuItem(value: 'Fixas', child: Text('Fixas')),
-                DropdownMenuItem(
-                    value: 'Investimentos', child: Text('Investimentos')),
+                DropdownMenuItem(value: 'Investimentos', child: Text('Investimentos')),
               ],
               onChanged: (value) {
                 setState(() {
