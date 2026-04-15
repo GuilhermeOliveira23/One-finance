@@ -18,6 +18,7 @@ class _ConfigScreenState extends State<ConfigScreen> {
   final FirestoreService _fs = FirestoreService();
   Usuario? _usuario;
   bool _loading = true;
+  String? _erro;
 
   @override
   void initState() {
@@ -26,16 +27,27 @@ class _ConfigScreenState extends State<ConfigScreen> {
   }
 
   Future<void> _carregarPerfil() async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) {
-      setState(() => _loading = false);
-      return;
-    }
-    final usuario = await _fs.getUserProfile(uid);
     setState(() {
-      _usuario = usuario;
-      _loading = false;
+      _loading = true;
+      _erro = null;
     });
+    try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) {
+        setState(() => _loading = false);
+        return;
+      }
+      final usuario = await _fs.getUserProfile(uid);
+      setState(() {
+        _usuario = usuario;
+        _loading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _loading = false;
+        _erro = 'Não foi possível carregar o perfil. Tente novamente.';
+      });
+    }
   }
 
   @override
@@ -53,7 +65,33 @@ class _ConfigScreenState extends State<ConfigScreen> {
           padding: const EdgeInsets.all(20),
           child: _loading
               ? const Center(child: CircularProgressIndicator(color: Colors.white))
-              : SingleChildScrollView(
+              : _erro != null
+                  ? Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.error_outline,
+                              color: Colors.white70, size: 48),
+                          const SizedBox(height: 16),
+                          Text(
+                            _erro!,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(color: Colors.white70),
+                          ),
+                          const SizedBox(height: 24),
+                          ElevatedButton.icon(
+                            onPressed: _carregarPerfil,
+                            icon: const Icon(Icons.refresh),
+                            label: const Text('Tentar novamente'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white24,
+                              foregroundColor: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
