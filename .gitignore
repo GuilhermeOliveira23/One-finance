@@ -1,5 +1,105 @@
+# Flutter
 /build/
+/dist/
 .dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
 .packages
+pubspec.lock
+
+# Dart/Flutter
 .pub-cache/
 .pub/
+*.lock
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+*.sublime-project
+
+# Android
+/android/app/debug
+/android/app/profile
+/android/app/release
+/android/app/gms/
+/android/app/google-services.json
+/android/.gradle/
+/android/captures/
+/android/gradlew
+/android/gradlew.bat
+/android/gradle/
+/android/local.properties
+
+# iOS
+/ios/Flutter/Flutter.framework
+/ios/Flutter/Flutter.podspec
+/ios/Flutter/flutter_export_environment.sh
+/ios/Pods
+/ios/.symlinks/
+/ios/Flutter/Flutter.podspec
+/ios/Flutter/.last_build_id
+*.pbxuser
+*.perspectivev3
+*.xcworkspace/xcuserdata/
+xcuserdata/
+*.xcodeproj/xcuserdata/
+DerivedData/
+.iosbuilds/
+
+# macOS
+/macos/Flutter/Flutter-Release.xcconfig
+/macos/Flutter/GeneratedPluginRegistrant.swift
+
+# Windows
+/windows/flutter/generated_plugin_registrant.cc
+/windows/flutter/generated_plugin_registrant.h
+/windows/flutter/generated_plugins.cmake
+/windows/runner/flutter_window.cpp
+/windows/runner/flutter_window.h
+
+# Linux
+/linux/flutter/generated_plugin_registrant.cc
+/linux/flutter/generated_plugin_registrant.h
+/linux/flutter/generated_plugins.cmake
+
+# Web
+/web/plugins/
+
+# Firebase
+firebase-debug.log
+*.log
+firepit-log.txt
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Coverage
+coverage/
+.coverage
+
+# Local environment files
+.env
+.env.local
+*.jks
+*.keystore
+
+# Generated files
+*.g.dart
+*.config.dart
+*.freezed.dart
